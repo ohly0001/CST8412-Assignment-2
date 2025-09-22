@@ -48,24 +48,24 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="rootPane" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.cst8412ohly0001assignment2.DatasetController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
+            <MenuItem mnemonicParsing="false" onAction="#newFile" text="New" />
+            <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…" />
+            <Menu fx:id="recentFilesMenu" mnemonicParsing="false" onShowing="#showRecentFile" text="Open Recent" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
+            <MenuItem mnemonicParsing="false" onAction="#saveFile" text="Save" />
+            <MenuItem mnemonicParsing="false" onAction="#saveFileAs" text="Save As…" />
+            <MenuItem mnemonicParsing="false" onAction="#revertFile" text="Revert" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" text="Preferences…" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Quit" />
+            <MenuItem mnemonicParsing="false" onAction="#quit" text="Quit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
@@ -84,7 +84,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem mnemonicParsing="false" text="About" />
           </items>
         </Menu>
       </menus>
@@ -93,11 +93,11 @@
       <items>
         <AnchorPane>
           <children>
-                  <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="New Record" />
+                  <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Add Record" />
                   <Button layoutY="27.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="View Record" />
                   <Button layoutY="53.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="View All Records" />
                   <Button layoutY="79.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Edit Record" />
-                  <Button layoutY="105.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Delete Record" />
+                  <Button layoutY="105.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Edit Schema" />
           </children>
         </AnchorPane>
         <ScrollPane prefHeight="-1.0" prefWidth="-1.0">
