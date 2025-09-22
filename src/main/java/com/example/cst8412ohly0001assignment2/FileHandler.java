@@ -89,6 +89,7 @@ public final class FileHandler
     }
 
     public static List<HashMap<String,String>> readFile(String filePath) {
+        if (filePath == null) return List.of();
         File file = new File(filePath);
         try {
             if (file.exists() && file.isFile() && file.canRead()) {
@@ -109,7 +110,7 @@ public final class FileHandler
         if (data.isEmpty()) return false;
 
         // Extract headers from the first row
-        Set<String> headers = data.getFirst().keySet();
+        Set<String> headers = data.get(0).keySet();
 
         CSVFormat format = CSVFormat.DEFAULT.builder()
                 .setHeader(headers.toArray(new String[0]))
@@ -172,20 +173,26 @@ public final class FileHandler
     }
 
     public static boolean writeFile(String filePath, List<HashMap<String,String>> data) {
+        if (filePath == null || data == null || data.isEmpty()) return false;
+
         File file = new File(filePath);
         try {
-            if (file.exists() && file.isFile() && file.canWrite() && data != null && !data.isEmpty()) {
-                return switch (getFileExtension(file)) {
-                    case "csv" -> writeCSV(file, data);
-                    case "json" -> writeJSON(file, data);
-                    case "xml" -> writeXML(file, data);
-                    default -> false;
-                };
+            File parent = file.getParentFile();
+            if (parent != null) {
+                if (!parent.mkdirs() && !parent.exists()) {
+                    LOGGER.warning("Could not create parent directories: " + parent.getAbsolutePath());
+                    return false;
+                }
             }
+            return switch (getFileExtension(file)) {
+                case "csv" -> writeCSV(file, data);
+                case "json" -> writeJSON(file, data);
+                case "xml" -> writeXML(file, data);
+                default -> false;
+            };
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error writing file: " + file.getAbsolutePath(), e);
+            return false;
         }
-
-        return false;
     }
 }
