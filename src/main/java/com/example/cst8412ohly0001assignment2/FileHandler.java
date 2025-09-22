@@ -14,7 +14,12 @@ import java.io.File;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.*;
 
 import java.util.logging.Logger;
@@ -24,7 +29,7 @@ public final class FileHandler
 {
     private static final Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
 
-    private static List<HashMap<String, String>> parseCSV(File file) throws Exception {
+    private static List<HashMap<String, String>> readCSV(File file) throws Exception {
         List<HashMap<String, String>> result = new ArrayList<>();
 
         // Updated builder-style CSVFormat
@@ -43,13 +48,13 @@ public final class FileHandler
         return result;
     }
 
-    private static List<HashMap<String, String>> parseJSON(File file) throws Exception {
+    private static List<HashMap<String, String>> readJSON(File file) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(file, new TypeReference<>() {
         });
     }
 
-    private static List<HashMap<String, String>> parseXML(File file) throws Exception {
+    private static List<HashMap<String, String>> readXML(File file) throws Exception {
         List<HashMap<String, String>> result = new ArrayList<>();
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -83,15 +88,14 @@ public final class FileHandler
         return name.substring(lastDot + 1).toLowerCase();
     }
 
-    public static List<HashMap<String,String>> readFile(String filePath)
-    {
+    public static List<HashMap<String,String>> readFile(String filePath) {
         File file = new File(filePath);
         try {
             if (file.exists() && file.isFile() && file.canRead()) {
                 return switch (getFileExtension(file)) {
-                    case "csv" -> parseCSV(file);
-                    case "json" -> parseJSON(file);
-                    case "xml" -> parseXML(file);
+                    case "csv" -> readCSV(file);
+                    case "json" -> readJSON(file);
+                    case "xml" -> readXML(file);
                     default -> List.of();
                 };
             }
@@ -99,5 +103,89 @@ public final class FileHandler
             LOGGER.log(Level.SEVERE, "Error reading file: " + file.getAbsolutePath(), e);
         }
         return List.of();
+    }
+
+    private static boolean writeCSV(File file, List<HashMap<String, String>> data) throws Exception {
+        if (data.isEmpty()) return false;
+
+        // Extract headers from the first row
+        Set<String> headers = data.getFirst().keySet();
+
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setHeader(headers.toArray(new String[0]))
+                .build();
+
+        try (var writer = new FileWriter(file);
+             var csvPrinter = new org.apache.commons.csv.CSVPrinter(writer, format)) {
+
+            for (HashMap<String, String> row : data) {
+                List<String> record = new ArrayList<>();
+                for (String header : headers) {
+                    record.add(row.getOrDefault(header, ""));
+                }
+                csvPrinter.printRecord(record);
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean writeJSON(File file, List<HashMap<String, String>> data) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
+        return true;
+    }
+
+    public static boolean writeXML(File file, List<HashMap<String, String>> data) throws Exception {
+        if (data.isEmpty()) return false;
+
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.newDocument();
+
+        // Root element
+        Element root = doc.createElement("records");
+        doc.appendChild(root);
+
+        for (HashMap<String, String> row : data) {
+            Element recordElement = doc.createElement("record");
+            root.appendChild(recordElement);
+
+            for (Map.Entry<String, String> entry : row.entrySet()) {
+                Element field = doc.createElement(entry.getKey());
+                field.appendChild(doc.createTextNode(entry.getValue() != null ? entry.getValue() : ""));
+                recordElement.appendChild(field);
+            }
+        }
+
+        // Write to file
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(file);
+        transformer.transform(source, result);
+
+        return true;
+    }
+
+    public static boolean writeFile(String filePath, List<HashMap<String,String>> data) {
+        File file = new File(filePath);
+        try {
+            if (file.exists() && file.isFile() && file.canWrite() && data != null && !data.isEmpty()) {
+                return switch (getFileExtension(file)) {
+                    case "csv" -> writeCSV(file, data);
+                    case "json" -> writeJSON(file, data);
+                    case "xml" -> writeXML(file, data);
+                    default -> false;
+                };
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error writing file: " + file.getAbsolutePath(), e);
+        }
+
+        return false;
     }
 }
