@@ -8,7 +8,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
-import java.util.Optional;
 
 public class DatasetController {
     @FXML
@@ -16,9 +15,52 @@ public class DatasetController {
 
     @FXML Menu recentFilesMenu;
 
+    private File selectFile(String title) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(title);
+
+        // Determine initial directory
+        File lastFile = FileHandler.INSTANCE.getCurrentFile();
+        String initialExtension = lastFile != null ? FileHandler.INSTANCE.getFileExtension(lastFile) : "";
+        File initialDir = (lastFile != null && lastFile.getParentFile() != null)
+                ? lastFile.getParentFile()
+                : new File(System.getProperty("user.home"));
+        if (initialDir.exists()) {
+            fileChooser.setInitialDirectory(initialDir);
+        }
+
+        // Create filters
+        FileChooser.ExtensionFilter allSafe = new FileChooser.ExtensionFilter("All Supported", "*.csv", "*.json", "*.yaml", "*.xml");
+        FileChooser.ExtensionFilter csv = new FileChooser.ExtensionFilter("CSV Files", "*.csv");
+        FileChooser.ExtensionFilter json = new FileChooser.ExtensionFilter("JSON Files", "*.json");
+        FileChooser.ExtensionFilter yaml = new FileChooser.ExtensionFilter("YAML Files", "*.yaml");
+        FileChooser.ExtensionFilter xml = new FileChooser.ExtensionFilter("XML Files", "*.xml");
+        FileChooser.ExtensionFilter all = new FileChooser.ExtensionFilter("All Files", "*.*");
+
+        // Add filters
+        fileChooser.getExtensionFilters().addAll(allSafe, csv, json, yaml, xml, all);
+
+        // Select default filter based on last file
+        fileChooser.setSelectedExtensionFilter(switch (initialExtension) {
+            case "csv" -> csv;
+            case "json" -> json;
+            case "yaml" -> yaml;
+            case "xml" -> xml;
+            default -> allSafe;
+        });
+
+        Window owner = rootPane.getScene().getWindow();
+        return fileChooser.showOpenDialog(owner);
+    }
+
+
     @FXML
-    private void newFile() {
-        //TODO create empty file
+    private void newFile()
+    {
+        File file = selectFile("New File");
+        if (file != null) {
+            FileHandler.INSTANCE.readFile(file);
+        }
     }
 
     //TODO add record
@@ -42,21 +84,7 @@ public class DatasetController {
     @FXML
     private void openFile()
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open File");
-
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-
-        fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
-            new FileChooser.ExtensionFilter("JSON Files", "*.json"),
-            new FileChooser.ExtensionFilter("XML Files", "*.xml"),
-            new FileChooser.ExtensionFilter("All Files", "*.*")
-        );
-
-        Window owner = rootPane.getScene().getWindow();
-
-        File file = fileChooser.showOpenDialog(owner);
+        File file = selectFile("Open File");
         if (file != null) {
             FileHandler.INSTANCE.readFile(file);
         }
@@ -65,12 +93,12 @@ public class DatasetController {
     @FXML
     private void showRecentFile()
     {
-        recentFilesMenu.setOnShowing(event -> {
+        recentFilesMenu.setOnShowing(_ -> {
             recentFilesMenu.getItems().clear();
 
             FileHandler.INSTANCE.getPreviousFiles().forEach(file -> {
                 MenuItem item = new MenuItem(file.getName());
-                item.setOnAction(e -> FileHandler.INSTANCE.readFile(file));
+                item.setOnAction(_ -> FileHandler.INSTANCE.readFile(file));
                 recentFilesMenu.getItems().add(item);
             });
         });
@@ -93,23 +121,9 @@ public class DatasetController {
 
     @FXML
     private void saveFileAs() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save File As");
-
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
-                new FileChooser.ExtensionFilter("JSON Files", "*.json"),
-                new FileChooser.ExtensionFilter("XML Files", "*.xml"),
-                new FileChooser.ExtensionFilter("All Files", "*.*")
-        );
-
-        Window owner = rootPane.getScene().getWindow();
-
-        File file = fileChooser.showOpenDialog(owner);
+        File file = selectFile("Save As");
         if (file != null) {
-            FileHandler.INSTANCE.writeFile(file);
+            FileHandler.INSTANCE.readFile(file);
         }
     }
 }

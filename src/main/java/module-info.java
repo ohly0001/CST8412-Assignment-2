@@ -5,6 +5,7 @@ module com.example.cst8412ohly0001assignment2 {
     requires com.fasterxml.jackson.databind;
     requires org.apache.commons.csv;
     requires java.logging;
+    requires org.yaml.snakeyaml;
 
 
     opens com.example.cst8412ohly0001assignment2 to javafx.fxml;

@@ -15,7 +15,7 @@ public class DatasetApplication extends Application {
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
         stage.setTitle("Dataset Editor");
 
-        stage.setOnCloseRequest(e -> Platform.exit());
+        stage.setOnCloseRequest(_ -> Platform.exit());
 
         stage.setScene(scene);
         stage.show();
