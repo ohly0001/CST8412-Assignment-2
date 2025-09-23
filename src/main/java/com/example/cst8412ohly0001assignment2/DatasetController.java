@@ -50,6 +50,7 @@ public class DatasetController {
         fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
             new FileChooser.ExtensionFilter("JSON Files", "*.json"),
+            new FileChooser.ExtensionFilter("YAML Files", "*.yaml"),
             new FileChooser.ExtensionFilter("XML Files", "*.xml"),
             new FileChooser.ExtensionFilter("All Files", "*.*")
         );
@@ -101,6 +102,7 @@ public class DatasetController {
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("CSV Files", "*.csv"),
                 new FileChooser.ExtensionFilter("JSON Files", "*.json"),
+                new FileChooser.ExtensionFilter("YAML Files", "*.yaml"),
                 new FileChooser.ExtensionFilter("XML Files", "*.xml"),
                 new FileChooser.ExtensionFilter("All Files", "*.*")
         );

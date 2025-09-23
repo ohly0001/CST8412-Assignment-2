@@ -25,6 +25,9 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
 public class FileHandler
 {
     public static final FileHandler INSTANCE = new FileHandler();
@@ -60,8 +63,6 @@ public class FileHandler
     }
     
     private void readCSV(File file) throws Exception {
-        fileContents.clear();
-
         // Updated builder-style CSVFormat
         CSVFormat format = CSVFormat.DEFAULT.builder()
                 .setHeader()         // uses first row as header
@@ -79,8 +80,6 @@ public class FileHandler
     }
 
     private void readXML(File file) throws Exception {
-        fileContents.clear();
-
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(file);
@@ -104,6 +103,24 @@ public class FileHandler
         }
     }
 
+    public void readYAML(File file) throws Exception {
+        Yaml yaml = new Yaml(); // default constructor
+        try (FileReader reader = new FileReader(file)) {
+            Object loaded = yaml.load(reader);
+            fileContents = new LinkedList<>();
+            if (loaded instanceof List<?>) {
+                for (Object obj : (List<?>) loaded) {
+                    if (obj instanceof LinkedHashMap<?, ?> map) {
+                        // cast keys/values to String
+                        LinkedHashMap<String, String> row = new LinkedHashMap<>();
+                        map.forEach((k,v) -> row.put(String.valueOf(k), v != null ? String.valueOf(v) : ""));
+                        fileContents.add(row);
+                    }
+                }
+            }
+        }
+    }
+
     private String getFileExtension(File file) {
         String name = file.getName();
         int lastDot = name.lastIndexOf('.');
@@ -114,9 +131,11 @@ public class FileHandler
     public void readFile(File file) {
         try {
             if (file.exists() && file.isFile() && file.canRead()) {
+                fileContents.clear();
                 switch (getFileExtension(file)) {
                     case "csv" -> readCSV(file);
                     case "json" -> readJSON(file);
+                    case "yaml" -> readYAML(file);
                     case "xml" -> readXML(file);
                 }
                 previousFiles.addFirst(file);
@@ -127,7 +146,7 @@ public class FileHandler
         }
     }
 
-    private boolean writeCSV(File file) throws Exception {
+    private void writeCSV(File file) throws Exception {
         // Extract headers from the first row
         Set<String> headers = fileContents.getFirst().keySet();
 
@@ -145,17 +164,14 @@ public class FileHandler
                 }
             });
         }
-
-        return true;
     }
 
-    private boolean writeJSON(File file) throws Exception {
+    private void writeJSON(File file) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writerWithDefaultPrettyPrinter().writeValue(file, fileContents);
-        return true;
     }
 
-    private boolean writeXML(File file) throws Exception {
+    private void writeXML(File file) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.newDocument();
@@ -183,31 +199,42 @@ public class FileHandler
         DOMSource source = new DOMSource(doc);
         StreamResult result = new StreamResult(file);
         transformer.transform(source, result);
-
-        return true;
     }
 
-    public boolean writeFile(File file) {
-        if (fileContents.isEmpty()) return false;
+    private void writeYAML(File file) throws Exception {
+        if (fileContents == null || fileContents.isEmpty()) return;
+
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+
+        Yaml yaml = new Yaml(options);
+
+        try (FileWriter writer = new FileWriter(file)) {
+            yaml.dump(fileContents, writer);
+        }
+    }
+
+    public void writeFile(File file) {
+        if (fileContents.isEmpty()) return;
         try {
             File parent = file.getParentFile();
             if (parent != null) {
                 if (!parent.mkdirs() && !parent.exists()) {
                     LOGGER.warning("Could not create parent directories: " + parent.getAbsolutePath());
-                    return false;
+                    return;
                 }
             }
             previousFiles.addFirst(file);
             currentFile = file;
-            return switch (getFileExtension(file)) {
+            switch (getFileExtension(file)) {
                 case "csv" -> writeCSV(file);
                 case "json" -> writeJSON(file);
+                case "yaml" -> writeYAML(file);
                 case "xml" -> writeXML(file);
-                default -> false;
-            };
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error writing file: " + file.getAbsolutePath(), e);
-            return false;
         }
     }
 
