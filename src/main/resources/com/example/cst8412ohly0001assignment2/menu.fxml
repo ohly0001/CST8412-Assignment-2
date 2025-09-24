@@ -94,13 +94,12 @@
         <AnchorPane>
           <children>
                   <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Add Record" />
-                  <Button layoutY="27.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="View Record" />
-                  <Button layoutY="53.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="View All Records" />
-                  <Button layoutY="79.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Edit Record" />
-                  <Button layoutY="105.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Edit Schema" />
+                  <Button layoutY="27.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSingleRecordView" text="View Record" />
+                  <Button layoutY="53.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showGridView" text="View All Records" />
+                  <Button layoutY="79.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSchemaEditor" text="Edit Schema" />
           </children>
         </AnchorPane>
-        <ScrollPane prefHeight="-1.0" prefWidth="-1.0">
+        <ScrollPane fx:id="viewPane" prefHeight="-1.0" prefWidth="-1.0">
           <content>
             <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
               <children>

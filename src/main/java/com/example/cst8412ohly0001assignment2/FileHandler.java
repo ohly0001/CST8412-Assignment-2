@@ -33,6 +33,7 @@ public class FileHandler
     public static final FileHandler INSTANCE = new FileHandler();
     private final Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
     private LinkedList<LinkedHashMap<String,String>> fileContents;
+    private LinkedList<String> fileSchema;
 
     private final LinkedHashSet<File> previousFiles;
     private File currentFile = null;
@@ -51,6 +52,13 @@ public class FileHandler
     {
         this.fileContents = fileContents;
     }
+
+    public LinkedList<String> getSchema()
+    {
+        return fileSchema;
+    }
+
+    public void setSchema(LinkedList<String> fileSchema) { this.fileSchema = fileSchema; }
 
     public LinkedHashSet<File> getPreviousFiles()
     {
@@ -128,6 +136,16 @@ public class FileHandler
         return name.substring(lastDot + 1).toLowerCase();
     }
 
+    public LinkedList<String> extractSchema()
+    {
+        //assumes schema is csv-like / tabularly consistent (may not work for all json and xml files)
+        LinkedHashMap<String,String> firstRow = fileContents.getFirst();
+        LinkedList<String> schema = new LinkedList<>();
+        //ensures order is preserved
+        firstRow.forEach((key, _) -> schema.addLast(key));
+        return schema;
+    }
+
     public void readFile(File file) {
         try {
             if (file.exists() && file.isFile() && file.canRead()) {
@@ -140,6 +158,7 @@ public class FileHandler
                 }
                 previousFiles.addFirst(file);
                 currentFile = file;
+                fileSchema = extractSchema();
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error reading file: " + file.getAbsolutePath(), e);
