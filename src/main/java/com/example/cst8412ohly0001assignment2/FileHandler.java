@@ -1,5 +1,6 @@
 package com.example.cst8412ohly0001assignment2;
 
+import javafx.collections.ObservableList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
@@ -41,6 +42,7 @@ public class FileHandler
     private FileHandler(){
         fileContents = new LinkedList<>();
         previousFiles = new LinkedHashSet<>();
+        fileSchema = new LinkedList<>();
     }
 
     public LinkedList<LinkedHashMap<String,String>> getContents()
@@ -142,7 +144,7 @@ public class FileHandler
         LinkedHashMap<String,String> firstRow = fileContents.getFirst();
         LinkedList<String> schema = new LinkedList<>();
         //ensures order is preserved
-        firstRow.forEach((key, _) -> schema.addLast(key));
+        firstRow.forEach((key, _) -> schema.add(key));
         return schema;
     }
 
@@ -265,5 +267,32 @@ public class FileHandler
     public void overwriteCurrentFile()
     {
         writeFile(currentFile);
+    }
+
+    public void closeCurrentFile() {
+        currentFile = null;
+        fileContents.clear();
+        fileSchema.clear();
+    }
+
+    public void addColumn(String newCol) {
+        fileSchema.add(newCol);
+        fileContents.forEach(row -> row.put(newCol, ""));
+    }
+
+    public void removeColumn(String colToRemove) {
+        fileSchema.remove(colToRemove);
+        fileContents.forEach(row -> row.remove(colToRemove));
+    }
+
+    public void reorderColumns(ObservableList<String> items) {
+        fileSchema = new LinkedList<>(items); //faster then clear + putAll()
+        for (int i = 0; i < fileContents.size(); i++) {
+            LinkedHashMap<String, String> oldRow = fileContents.get(i);
+            LinkedHashMap<String, String> newRow = new LinkedHashMap<>();
+            //reorders rows, drops removed ones and adds new ones, acting as a schema sync
+            fileSchema.forEach(key -> newRow.put(key, oldRow.getOrDefault(key, "")));
+            fileContents.set(i, newRow);
+        }
     }
 }

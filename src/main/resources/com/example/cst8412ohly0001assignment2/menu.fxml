@@ -58,7 +58,7 @@
             <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…" />
             <Menu fx:id="recentFilesMenu" mnemonicParsing="false" onShowing="#showRecentFile" text="Open Recent" />
             <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
+            <MenuItem mnemonicParsing="false" onAction="#closeFile" text="Close" />
             <MenuItem mnemonicParsing="false" onAction="#saveFile" text="Save" />
             <MenuItem mnemonicParsing="false" onAction="#saveFileAs" text="Save As…" />
             <MenuItem mnemonicParsing="false" onAction="#revertFile" text="Revert" />
@@ -93,7 +93,7 @@
       <items>
         <AnchorPane>
           <children>
-                  <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" text="Add Record" />
+                  <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showAddRecordView" text="Add Record" />
                   <Button layoutY="27.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSingleRecordView" text="View Record" />
                   <Button layoutY="53.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showGridView" text="View All Records" />
                   <Button layoutY="79.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSchemaEditor" text="Edit Schema" />

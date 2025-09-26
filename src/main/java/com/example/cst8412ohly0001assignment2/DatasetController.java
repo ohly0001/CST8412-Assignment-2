@@ -4,8 +4,12 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -13,9 +17,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
+import java.net.URL;
 import java.util.*;
 
-public class DatasetController {
+public class DatasetController implements Initializable {
 
     @FXML public VBox rootPane;
     @FXML public ScrollPane viewPane;
@@ -32,8 +37,25 @@ public class DatasetController {
 
     private VBox schemaEditorView;
 
+    private String currentView = "table";
+
+    /* ------------------------ Utility ------------------------ */
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        refreshCurrentView();
+    }
+
+    private void refreshCurrentView() {
+        switch (currentView) {
+            case "table" -> refreshTableView();
+            case "single" -> refreshSingleRecord();
+            case "add" -> refreshAddRecord();
+            case "schema" -> showSchemaEditor();
+        }
+    }
+
     /* ------------------------ File selection ------------------------ */
-    private File selectFile(String title) {
+    private FileChooser buildFileChooser(String title) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(title);
 
@@ -61,16 +83,59 @@ public class DatasetController {
             default -> allSafe;
         });
 
+        return fileChooser;
+    }
+
+    private File selectFileToOpen(String title) {
+        FileChooser fileChooser = buildFileChooser(title);
         Window owner = rootPane.getScene().getWindow();
         return fileChooser.showOpenDialog(owner);
     }
 
+    private File selectFileToSave(String title) {
+        FileChooser fileChooser = buildFileChooser(title);
+        Window owner = rootPane.getScene().getWindow();
+        return fileChooser.showSaveDialog(owner);
+    }
+
     /* ------------------------ File actions ------------------------ */
-    @FXML private void newFile() { File file = selectFile("New File"); if (file != null) FileHandler.INSTANCE.readFile(file); }
-    @FXML private void openFile() { File file = selectFile("Open File"); if (file != null) FileHandler.INSTANCE.readFile(file); }
-    @FXML private void saveFile() { FileHandler.INSTANCE.overwriteCurrentFile(); }
-    @FXML private void saveFileAs() { File file = selectFile("Save As"); if (file != null) FileHandler.INSTANCE.readFile(file); }
-    @FXML private void revertFile() { FileHandler.INSTANCE.reloadCurrentFile(); }
+    @FXML private void newFile() {
+        File file = selectFileToSave("New File");
+        if (file != null) FileHandler.INSTANCE.readFile(file);
+        showSchemaEditor();
+    }
+
+    @FXML private void openFile() {
+        File file = selectFileToOpen("Open File");
+        if (file != null) {
+            FileHandler.INSTANCE.readFile(file);
+            refreshCurrentView();
+        }
+    }
+
+    @FXML private void saveFile() {
+        FileHandler.INSTANCE.overwriteCurrentFile();
+    }
+
+    @FXML private void saveFileAs() {
+        File file = selectFileToSave("Save As");
+        if (file != null) {
+            FileHandler.INSTANCE.writeFile(file);
+            refreshCurrentView();
+        }
+    }
+
+    @FXML private void closeFile() {
+        // TODO add confirmation menu to save + close, not save + close, or cancel (keep open)
+        FileHandler.INSTANCE.closeCurrentFile();
+        refreshCurrentView();
+    }
+
+    @FXML private void revertFile() {
+        FileHandler.INSTANCE.reloadCurrentFile();
+        refreshCurrentView();
+    }
+
     @FXML private void quit() { Platform.exit(); }
 
     @FXML private void showRecentFile() {
@@ -139,6 +204,7 @@ public class DatasetController {
         initAddRecordView();
         viewPane.setContent(addRecordView);
         refreshAddRecord();
+        currentView = "add";
     }
 
     /* ------------------------ Single-record view ------------------------ */
@@ -165,7 +231,7 @@ public class DatasetController {
                 contents.remove(currentRowIndex);
                 if (currentRowIndex >= contents.size()) currentRowIndex = contents.size() - 1;
                 refreshSingleRecord();
-                refreshTableView();
+                //refreshTableView();
             }
         });
         saveButton.setOnAction(_ -> {
@@ -176,7 +242,7 @@ public class DatasetController {
                 for (int i = 0; i < fieldInputs.size(); i++) {
                     row.put(keys.get(i), fieldInputs.get(i).getText());
                 }
-                refreshTableView();
+                //refreshTableView();
             }
         });
     }
@@ -209,6 +275,7 @@ public class DatasetController {
         initSingleRecordView();
         viewPane.setContent(singleRecordView);
         refreshSingleRecord();
+        currentView = "single";
     }
 
     /* ------------------------ Grid view ------------------------ */
@@ -233,7 +300,7 @@ public class DatasetController {
 
         initGridView();
 
-        Set<String> headers = contents.getFirst().keySet();
+        LinkedList<String> headers = FileHandler.INSTANCE.getSchema();
         if (tableView.getColumns().isEmpty() || tableView.getColumns().size() != headers.size()) {
             tableView.getColumns().clear();
             for (String header : headers) {
@@ -246,7 +313,8 @@ public class DatasetController {
         int pageCount = (int) Math.ceil(contents.size() / 100.0);
         pagination.setPageCount(Math.max(pageCount, 1));
         pagination.setCurrentPageIndex(0);
-        createPage(0);
+        VBox page = createPage(0);
+        viewPane.setContent(page);
     }
 
     private VBox createPage(int pageIndex) {
@@ -258,10 +326,14 @@ public class DatasetController {
         return new VBox(tableView);
     }
 
-    @FXML public void showGridView() { refreshTableView(); }
+    @FXML public void showGridView() {
+        refreshTableView();
+        currentView = "table";
+    }
 
     /* ------------------------ Schema editor ------------------------ */
-    @FXML private void showSchemaEditor() {
+    @FXML
+    private void showSchemaEditor() {
         if (schemaEditorView == null) {
             schemaEditorView = new VBox(10);
             schemaEditorView.setPadding(new Insets(10));
@@ -269,20 +341,121 @@ public class DatasetController {
             schemaEditorView.getChildren().clear();
         }
 
-        var contents = FileHandler.INSTANCE.getContents();
-        if (contents.isEmpty()) {
-            schemaEditorView.getChildren().add(new Label("No data loaded."));
-        } else {
-            var headers = contents.getFirst().keySet();
-            headers.forEach(h -> schemaEditorView.getChildren().add(new Label("Column: " + h)));
+        // --- ListView for columns ---
+        ListView<String> columnList = new ListView<>();
+        columnList.getItems().addAll(FileHandler.INSTANCE.getSchema());
+        columnList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        columnList.setPrefHeight(250);
 
-            Button addCol = new Button("Add Column");
-            Button removeCol = new Button("Remove Column");
-            schemaEditorView.getChildren().addAll(addCol, removeCol);
-
-            // TODO: hook up schema change actions
+        Label emptyLabel = new Label("No schema found. Add columns to get started.");
+        if (columnList.getItems().isEmpty()) {
+            schemaEditorView.getChildren().add(emptyLabel);
         }
 
+        // --- Enable drag-and-drop reordering ---
+        columnList.setCellFactory(lv -> {
+            ListCell<String> cell = new ListCell<>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? null : item);
+                }
+            };
+
+            cell.setOnDragDetected(event -> {
+                if (cell.isEmpty()) return;
+                Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent cc = new ClipboardContent();
+                cc.putString(cell.getItem());
+                db.setContent(cc);
+                cell.setStyle("-fx-background-color: lightblue;");
+                event.consume();
+            });
+
+            cell.setOnDragOver(event -> {
+                if (event.getGestureSource() != cell && event.getDragboard().hasString()) {
+                    event.acceptTransferModes(TransferMode.MOVE);
+                }
+                event.consume();
+            });
+
+            cell.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasString()) {
+                    int draggedIdx = columnList.getItems().indexOf(db.getString());
+                    int thisIdx = cell.getIndex();
+                    if (draggedIdx != thisIdx) {
+                        Collections.swap(columnList.getItems(), draggedIdx, thisIdx);
+                        FileHandler.INSTANCE.reorderColumns(columnList.getItems());
+                        refreshCurrentView();
+                        columnList.getSelectionModel().select(thisIdx);
+                    }
+                    event.setDropCompleted(true);
+                    cell.setStyle(""); // reset style
+                    event.consume();
+                }
+            });
+
+            cell.setOnDragDone(event -> cell.setStyle(""));
+            return cell;
+        });
+
+        // --- Buttons + TextField ---
+        TextField columnName = new TextField();
+        columnName.setPromptText("Column Name...");
+        Button add = new Button("Add Column");
+        Button remove = new Button("Remove Column");
+
+        add.setMaxWidth(Double.MAX_VALUE);
+        remove.setMaxWidth(Double.MAX_VALUE);
+
+        VBox buttonBox = new VBox(5, columnName, add, remove);
+        HBox editorBox = new HBox(10, columnList, buttonBox);
+
+        // --- Add Column ---
+        Runnable addColumnAction = () -> {
+            String name = columnName.getText();
+            if (name != null && !name.isBlank() && !columnList.getItems().contains(name)) {
+                name = name.strip();
+                columnList.getItems().add(name);
+                FileHandler.INSTANCE.addColumn(name);
+                refreshCurrentView();
+            }
+            columnName.clear();
+            schemaEditorView.getChildren().remove(emptyLabel);
+        };
+        add.setOnAction(e -> addColumnAction.run());
+        columnName.setOnAction(e -> addColumnAction.run()); // Enter key adds
+
+        // --- Remove Column ---
+        Runnable removeColumnAction = () -> {
+            String col = columnList.getSelectionModel().getSelectedItem();
+            String name = columnName.getText();
+            if (col != null) {
+                columnList.getItems().remove(col);
+                FileHandler.INSTANCE.removeColumn(col);
+            } else if (name != null && !name.isBlank() && columnList.getItems().contains(name)) {
+                columnList.getItems().remove(name.strip());
+                FileHandler.INSTANCE.removeColumn(name.strip());
+            }
+            columnName.clear();
+            refreshCurrentView();
+
+            if (columnList.getItems().isEmpty()) {
+                schemaEditorView.getChildren().add(emptyLabel);
+            }
+        };
+        remove.setOnAction(e -> removeColumnAction.run());
+        columnName.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case DELETE -> removeColumnAction.run();
+            }
+        });
+
+        schemaEditorView.getChildren().add(editorBox);
         viewPane.setContent(schemaEditorView);
+        currentView = "schema";
     }
+
+
 }
