@@ -347,13 +347,8 @@ public class DatasetController implements Initializable {
         columnList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         columnList.setPrefHeight(250);
 
-        Label emptyLabel = new Label("No schema found. Add columns to get started.");
-        if (columnList.getItems().isEmpty()) {
-            schemaEditorView.getChildren().add(emptyLabel);
-        }
-
         // --- Enable drag-and-drop reordering ---
-        columnList.setCellFactory(lv -> {
+        columnList.setCellFactory(_ -> {
             ListCell<String> cell = new ListCell<>() {
                 @Override
                 protected void updateItem(String item, boolean empty) {
@@ -363,17 +358,18 @@ public class DatasetController implements Initializable {
             };
 
             cell.setOnDragDetected(event -> {
-                if (cell.isEmpty()) return;
-                Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
-                ClipboardContent cc = new ClipboardContent();
-                cc.putString(cell.getItem());
-                db.setContent(cc);
-                cell.setStyle("-fx-background-color: lightblue;");
-                event.consume();
+                if (!cell.isEmpty()) {
+                    Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                    ClipboardContent cc = new ClipboardContent();
+                    cc.putString(cell.getItem());
+                    db.setContent(cc);
+                    event.consume();
+                }
             });
 
             cell.setOnDragOver(event -> {
-                if (event.getGestureSource() != cell && event.getDragboard().hasString()) {
+                if (event.getGestureSource() != cell &&
+                        event.getDragboard().hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
                 }
                 event.consume();
@@ -384,23 +380,27 @@ public class DatasetController implements Initializable {
                 if (db.hasString()) {
                     int draggedIdx = columnList.getItems().indexOf(db.getString());
                     int thisIdx = cell.getIndex();
-                    if (draggedIdx != thisIdx) {
+                    if (draggedIdx >= 0 && thisIdx >= 0 && draggedIdx != thisIdx) {
                         Collections.swap(columnList.getItems(), draggedIdx, thisIdx);
+
+                        // Update FileHandler schema
                         FileHandler.INSTANCE.reorderColumns(columnList.getItems());
+
+                        // Refresh UI views if necessary
                         refreshCurrentView();
-                        columnList.getSelectionModel().select(thisIdx);
+
+                        // Update selection
+                        columnList.getSelectionModel().clearAndSelect(thisIdx);
                     }
                     event.setDropCompleted(true);
-                    cell.setStyle(""); // reset style
                     event.consume();
                 }
             });
 
-            cell.setOnDragDone(event -> cell.setStyle(""));
             return cell;
         });
 
-        // --- Buttons + TextField ---
+        // --- Buttons for adding/removing columns ---
         TextField columnName = new TextField();
         columnName.setPromptText("Column Name...");
         Button add = new Button("Add Column");
@@ -409,53 +409,37 @@ public class DatasetController implements Initializable {
         add.setMaxWidth(Double.MAX_VALUE);
         remove.setMaxWidth(Double.MAX_VALUE);
 
-        VBox buttonBox = new VBox(5, columnName, add, remove);
-        HBox editorBox = new HBox(10, columnList, buttonBox);
-
-        // --- Add Column ---
-        Runnable addColumnAction = () -> {
+        add.setOnAction(_ -> {
             String name = columnName.getText();
-            if (name != null && !name.isBlank() && !columnList.getItems().contains(name)) {
+            if (name != null && !name.isBlank() && !columnList.getItems().contains(name.strip())) {
                 name = name.strip();
                 columnList.getItems().add(name);
                 FileHandler.INSTANCE.addColumn(name);
                 refreshCurrentView();
             }
             columnName.clear();
-            schemaEditorView.getChildren().remove(emptyLabel);
-        };
-        add.setOnAction(e -> addColumnAction.run());
-        columnName.setOnAction(e -> addColumnAction.run()); // Enter key adds
+        });
 
-        // --- Remove Column ---
-        Runnable removeColumnAction = () -> {
+        remove.setOnAction(_ -> {
             String col = columnList.getSelectionModel().getSelectedItem();
-            String name = columnName.getText();
             if (col != null) {
                 columnList.getItems().remove(col);
                 FileHandler.INSTANCE.removeColumn(col);
-            } else if (name != null && !name.isBlank() && columnList.getItems().contains(name)) {
-                columnList.getItems().remove(name.strip());
-                FileHandler.INSTANCE.removeColumn(name.strip());
-            }
-            columnName.clear();
-            refreshCurrentView();
-
-            if (columnList.getItems().isEmpty()) {
-                schemaEditorView.getChildren().add(emptyLabel);
-            }
-        };
-        remove.setOnAction(e -> removeColumnAction.run());
-        columnName.setOnKeyPressed(event -> {
-            switch (event.getCode()) {
-                case DELETE -> removeColumnAction.run();
+                refreshCurrentView();
             }
         });
 
+        VBox buttonBox = new VBox(5, columnName, add, remove);
+        HBox editorBox = new HBox(10, columnList, buttonBox);
+
+        // Handle empty schema
+        if (columnList.getItems().isEmpty()) {
+            schemaEditorView.getChildren().add(new Label("No schema found. Add columns to get started."));
+        }
+
         schemaEditorView.getChildren().add(editorBox);
+
         viewPane.setContent(schemaEditorView);
         currentView = "schema";
     }
-
-
 }
