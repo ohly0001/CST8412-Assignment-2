@@ -138,15 +138,22 @@ public class DatasetController implements Initializable {
 
     @FXML private void quit() { Platform.exit(); }
 
-    @FXML private void showRecentFile() {
-        recentFilesMenu.setOnShowing(_ -> {
-            recentFilesMenu.getItems().clear();
-            FileHandler.INSTANCE.getPreviousFiles().forEach(file -> {
+    @FXML
+    private void showRecentFile() {
+        recentFilesMenu.getItems().clear();
+
+        LinkedHashSet<File> recentFiles = FileHandler.INSTANCE.getPreviousFiles();
+        if (recentFiles.isEmpty()) {
+            MenuItem none = new MenuItem("No recent files");
+            none.setDisable(true);
+            recentFilesMenu.getItems().add(none);
+        } else {
+            for (File file : recentFiles) {
                 MenuItem item = new MenuItem(file.getName());
                 item.setOnAction(_ -> FileHandler.INSTANCE.readFile(file));
                 recentFilesMenu.getItems().add(item);
-            });
-        });
+            }
+        }
     }
 
     /* ------------------------ Add record view ------------------------ */
@@ -164,7 +171,6 @@ public class DatasetController implements Initializable {
         addRecordView.getChildren().add(navBox);
 
         saveButton.setOnAction(_ -> {
-            LinkedList<LinkedHashMap<String,String>> contents = FileHandler.INSTANCE.getContents();
             LinkedHashMap<String,String> row = new LinkedHashMap<>();
             LinkedList<String> schema = FileHandler.INSTANCE.getSchema();
 
@@ -172,7 +178,9 @@ public class DatasetController implements Initializable {
                 row.put(schema.get(i), fieldInputs.get(i).getText());
             }
 
-            contents.addLast(row);
+            // Use command to add row
+            HistoryHandler.INSTANCE.perform(new AddRowCommand(row));
+
             refreshTableView();
             refreshAddRecord();
         });
@@ -228,10 +236,14 @@ public class DatasetController implements Initializable {
         deleteButton.setOnAction(_ -> {
             LinkedList<LinkedHashMap<String,String>> contents = FileHandler.INSTANCE.getContents();
             if (!contents.isEmpty()) {
-                contents.remove(currentRowIndex);
-                if (currentRowIndex >= contents.size()) currentRowIndex = contents.size() - 1;
+                // Use command to remove current row
+                HistoryHandler.INSTANCE.perform(new RemoveRowCommand(currentRowIndex));
+
+                if (currentRowIndex >= contents.size())
+                    currentRowIndex = contents.size() - 1;
+
                 refreshSingleRecord();
-                //refreshTableView();
+                refreshTableView();
             }
         });
         saveButton.setOnAction(_ -> {
@@ -265,6 +277,19 @@ public class DatasetController implements Initializable {
             Label label = new Label(key);
             TextField tf = new TextField(row.get(key));
             fieldInputs.add(tf);
+
+            // Hook edit command to each TextField
+            tf.focusedProperty().addListener((_, _, isNowFocused) -> {
+                if (!isNowFocused) { // user finished editing
+                    String newValue = tf.getText();
+                    String oldValue = row.get(key);
+                    if (!newValue.equals(oldValue)) {
+                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue));
+                        refreshTableView();
+                    }
+                }
+            });
+
             grid.addRow(r++, label, tf);
         }
 
@@ -441,5 +466,15 @@ public class DatasetController implements Initializable {
 
         viewPane.setContent(schemaEditorView);
         currentView = "schema";
+    }
+
+    @FXML
+    private void undo() {
+        HistoryHandler.INSTANCE.undo();
+    }
+
+    @FXML
+    private void redo() {
+        HistoryHandler.INSTANCE.redo();
     }
 }

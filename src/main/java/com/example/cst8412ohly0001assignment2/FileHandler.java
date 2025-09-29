@@ -32,18 +32,14 @@ import org.yaml.snakeyaml.Yaml;
 public class FileHandler
 {
     public static final FileHandler INSTANCE = new FileHandler();
-    private final Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
-    private LinkedList<LinkedHashMap<String,String>> fileContents;
-    private LinkedList<String> fileSchema;
+    private Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
+    private LinkedList<LinkedHashMap<String,String>> fileContents = new LinkedList<>();
+    private LinkedList<String> fileSchema = new LinkedList<>();
 
-    private final LinkedHashSet<File> previousFiles;
+    private LinkedHashSet<File> previousFiles = new LinkedHashSet<>();
     private File currentFile = null;
     
-    private FileHandler(){
-        fileContents = new LinkedList<>();
-        previousFiles = new LinkedHashSet<>();
-        fileSchema = new LinkedList<>();
-    }
+    private FileHandler(){}
 
     public LinkedList<LinkedHashMap<String,String>> getContents()
     {

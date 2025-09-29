@@ -56,11 +56,12 @@
           <items>
             <MenuItem mnemonicParsing="false" onAction="#newFile" text="New" />
             <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…" />
-            <Menu fx:id="recentFilesMenu" mnemonicParsing="false" onAction="#showRecentFile" text="Open Recent" />
+            <Menu fx:id="recentFilesMenu" mnemonicParsing="false" onShowing="#showRecentFile" text="Open Recent" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#closeFile" text="Close" />
             <MenuItem mnemonicParsing="false" onAction="#saveFile" text="Save" />
             <MenuItem mnemonicParsing="false" onAction="#saveFileAs" text="Save As…" />
+            <MenuItem mnemonicParsing="false" onAction="#revertFile" text="Revert" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" text="Preferences…" />
             <SeparatorMenuItem mnemonicParsing="false" />
@@ -69,9 +70,16 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" onAction="#undo" text="Undo" />
-            <MenuItem mnemonicParsing="false" onAction="#redo" text="Redo" />
-            <MenuItem mnemonicParsing="false" onAction="#revertFile" text="Revert" />
+            <MenuItem mnemonicParsing="false" text="Undo" />
+            <MenuItem mnemonicParsing="false" text="Redo" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" text="Cut" />
+            <MenuItem mnemonicParsing="false" text="Copy" />
+            <MenuItem mnemonicParsing="false" text="Paste" />
+            <MenuItem mnemonicParsing="false" text="Delete" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" text="Select All" />
+            <MenuItem mnemonicParsing="false" text="Unselect All" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -85,10 +93,10 @@
       <items>
         <AnchorPane>
           <children>
-                  <Button layoutY="1.0" mnemonicParsing="false" onAction="#showAddRecordView" prefHeight="26.0" prefWidth="222.0" text="Add Record" />
-                  <Button layoutY="27.0" mnemonicParsing="false" onAction="#showSingleRecordView" prefHeight="26.0" prefWidth="222.0" text="View Record" />
-                  <Button layoutY="53.0" mnemonicParsing="false" onAction="#showGridView" prefHeight="26.0" prefWidth="222.0" text="View All Records" />
-                  <Button layoutY="79.0" mnemonicParsing="false" onAction="#showSchemaEditor" prefHeight="26.0" prefWidth="222.0" text="Edit Schema" />
+                  <Button layoutY="1.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showAddRecordView" text="Add Record" />
+                  <Button layoutY="27.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSingleRecordView" text="View Record" />
+                  <Button layoutY="53.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showGridView" text="View All Records" />
+                  <Button layoutY="79.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="222.0" onAction="#showSchemaEditor" text="Edit Schema" />
           </children>
         </AnchorPane>
         <ScrollPane fx:id="viewPane" prefHeight="-1.0" prefWidth="-1.0">
