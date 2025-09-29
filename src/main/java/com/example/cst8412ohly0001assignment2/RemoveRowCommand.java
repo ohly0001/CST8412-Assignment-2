@@ -6,13 +6,12 @@ import javafx.collections.ObservableList;
 public class RemoveRowCommand extends Command {
     private final LinkedHashMap<String, String> row;
     private final ObservableList<LinkedHashMap<String, String>> contents;
-    private final int index;
 
-    public RemoveRowCommand(LinkedHashMap<String, String> row, int index, ObservableList<LinkedHashMap<String,String>> contents, DatasetController controller) {
+    public RemoveRowCommand(LinkedHashMap<String, String> row, int index, ObservableList<LinkedHashMap<String,String>> contents, int paginationIndex, int rowIndex, DatasetController controller) {
+        super(paginationIndex, rowIndex, controller);
         this.row = row;
         this.index = index;
         this.contents = contents;
-        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override
@@ -22,6 +21,6 @@ public class RemoveRowCommand extends Command {
 
     @Override
     public void undo() {
-        contents.add(index, row);
+        contents.add(rowIndex, row);
     }
 }

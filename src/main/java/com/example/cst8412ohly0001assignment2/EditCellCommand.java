@@ -8,15 +8,12 @@ public class EditCellCommand extends Command {
     private final String oldValue;
     private final String newValue;
 
-    public EditCellCommand(LinkedHashMap<String, String> row, String column, String newValue,
-                           DatasetController controller) {
+    public EditCellCommand(LinkedHashMap<String, String> row, String column, String newValue, int paginationIndex, int rowIndex, DatasetController controller) {
+        super(paginationIndex, rowIndex, controller);
         this.row = row;
         this.column = column;
         this.oldValue = row.get(column);
         this.newValue = newValue;
-
-        // Capture current UI context at creation
-        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override

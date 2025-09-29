@@ -10,11 +10,11 @@ public class RemoveColumnCommand extends Command {
     private final List<String> schema;
     private final HashMap<LinkedHashMap<String, String>, String> backupValues = new HashMap<>();
 
-    public RemoveColumnCommand(String columnName, List<LinkedHashMap<String, String>> contents, List<String> schema, DatasetController controller) {
+    public RemoveColumnCommand(String columnName, List<LinkedHashMap<String, String>> contents, List<String> schema, int paginationIndex, int rowIndex, DatasetController controller) {
+        super(paginationIndex, rowIndex, controller);
         this.columnName = columnName;
         this.contents = contents;
         this.schema = schema;
-        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override

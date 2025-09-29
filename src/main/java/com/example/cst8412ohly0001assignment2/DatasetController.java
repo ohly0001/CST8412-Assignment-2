@@ -37,7 +37,7 @@ public class DatasetController implements Initializable {
 
     private VBox schemaEditorView;
 
-    private String currentView = "table";
+    String currentView = "table";
 
     /* ------------------------ Utility ------------------------ */
     @Override
@@ -108,8 +108,7 @@ public class DatasetController implements Initializable {
     @FXML private void openFile() {
         File file = selectFileToOpen("Open File");
         if (file != null) {
-            FileHandler.INSTANCE.readFile(file);
-            refreshCurrentView();
+            HistoryHandler.INSTANCE.perform(new OpenFileCommand(file, pagination.getCurrentPageIndex(), currentRowIndex, this), this);
         }
     }
 
@@ -133,6 +132,7 @@ public class DatasetController implements Initializable {
 
     @FXML private void revertFile() {
         FileHandler.INSTANCE.reloadCurrentFile();
+        HistoryHandler.INSTANCE.perform(new OpenFileCommand(FileHandler.INSTANCE.getCurrentFile(), pagination.getCurrentPageIndex(), currentRowIndex, this), this);
         refreshCurrentView();
     }
 
@@ -182,6 +182,8 @@ public class DatasetController implements Initializable {
             HistoryHandler.INSTANCE.perform(new AddRowCommand(
                     row,
                     FXCollections.observableArrayList(FileHandler.INSTANCE.getContents()),
+                    pagination.getCurrentPageIndex(),
+                    currentRowIndex,
                     this
             ), this);
 
@@ -247,6 +249,8 @@ public class DatasetController implements Initializable {
                         row,
                         currentRowIndex,
                         FXCollections.observableArrayList(contents),
+                        pagination.getCurrentPageIndex(),
+                        currentRowIndex,
                         this
                 ), this);
 
@@ -294,7 +298,7 @@ public class DatasetController implements Initializable {
                     String newValue = tf.getText();
                     String oldValue = row.get(key);
                     if (!newValue.equals(oldValue)) {
-                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, this), this);
+                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, pagination.getCurrentPageIndex(), currentRowIndex, this), this);
                         refreshTableView();
                     }
                 }
@@ -368,7 +372,7 @@ public class DatasetController implements Initializable {
 
     /* ------------------------ Schema editor ------------------------ */
     @FXML
-    private void showSchemaEditor() {
+    void showSchemaEditor() {
         if (schemaEditorView == null) {
             schemaEditorView = new VBox(10);
             schemaEditorView.setPadding(new Insets(10));
@@ -454,8 +458,9 @@ public class DatasetController implements Initializable {
                         name,
                         FileHandler.INSTANCE.getContents(),
                         FileHandler.INSTANCE.getSchema(),
-                        this
-                ), this);
+                        pagination.getCurrentPageIndex(),
+                        currentRowIndex,
+                        this), this);
 
                 columnList.getItems().add(name);
                 refreshCurrentView();
@@ -471,8 +476,9 @@ public class DatasetController implements Initializable {
                         col,
                         FileHandler.INSTANCE.getContents(),
                         FileHandler.INSTANCE.getSchema(),
-                        this
-                ), this);
+                        pagination.getCurrentPageIndex(),
+                        currentRowIndex,
+                        this), this);
 
                 columnList.getItems().remove(col);
                 refreshCurrentView();

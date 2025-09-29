@@ -291,4 +291,13 @@ public class FileHandler
             fileContents.set(i, newRow);
         }
     }
+
+    public void setCurrentFile(File currentFile) {
+        previousFiles.addLast(this.currentFile);
+        this.currentFile = currentFile;
+    }
+
+    public void clearContents() {
+        fileContents.clear();
+    }
 }

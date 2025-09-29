@@ -6,6 +6,13 @@ public abstract class Command {
     // UI context
     protected int paginationIndex = 0;
     protected int rowIndex = 0;
+    protected DatasetController controller;
+
+    public Command(int paginationIndex, int rowIndex, DatasetController controller) {
+        this.paginationIndex = paginationIndex;
+        this.rowIndex = rowIndex;
+        this.controller = controller;
+    }
 
     // Capture context when the command is created
     public void captureUIContext(Pagination pagination, int rowIndex) {
