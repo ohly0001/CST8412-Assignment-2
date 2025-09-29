@@ -1,32 +1,31 @@
 package com.example.cst8412ohly0001assignment2;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.HashMap;
 
-public class RemoveColumnCommand implements Command {
+public class RemoveColumnCommand extends Command {
     private final String columnName;
-    private final List<String> oldValues = new ArrayList<>();
+    private final List<LinkedHashMap<String, String>> contents;
+    private final List<String> schema;
+    private final HashMap<LinkedHashMap<String, String>, String> backupValues = new HashMap<>();
 
-    public RemoveColumnCommand(String columnName) {
+    public RemoveColumnCommand(String columnName, List<LinkedHashMap<String, String>> contents, List<String> schema, DatasetController controller) {
         this.columnName = columnName;
+        this.contents = contents;
+        this.schema = schema;
+        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override
     public void execute() {
-        // store old values for undo
-        FileHandler.INSTANCE.getContents().forEach(row ->
-            oldValues.add(row.get(columnName))
-        );
-        FileHandler.INSTANCE.removeColumn(columnName);
+        schema.remove(columnName);
+        contents.forEach(row -> backupValues.put(row, row.remove(columnName)));
     }
 
     @Override
     public void undo() {
-        FileHandler.INSTANCE.addColumn(columnName);
-        List<LinkedHashMap<String,String>> contents = FileHandler.INSTANCE.getContents();
-        for (int i = 0; i < contents.size(); i++) {
-            contents.get(i).put(columnName, oldValues.get(i));
-        }
+        schema.add(columnName);
+        contents.forEach(row -> row.put(columnName, backupValues.get(row)));
     }
 }

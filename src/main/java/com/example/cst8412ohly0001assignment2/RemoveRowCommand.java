@@ -1,36 +1,27 @@
 package com.example.cst8412ohly0001assignment2;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import javafx.collections.ObservableList;
 
-public class RemoveRowCommand implements Command {
+public class RemoveRowCommand extends Command {
+    private final LinkedHashMap<String, String> row;
+    private final ObservableList<LinkedHashMap<String, String>> contents;
+    private final int index;
 
-    public LinkedHashMap<String, String> removedRow;
-    private int rowIndex;
-
-    public RemoveRowCommand(int rowIndex) {
-        this.rowIndex = rowIndex;
+    public RemoveRowCommand(LinkedHashMap<String, String> row, int index, ObservableList<LinkedHashMap<String,String>> contents, DatasetController controller) {
+        this.row = row;
+        this.index = index;
+        this.contents = contents;
+        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override
     public void execute() {
-        LinkedList<LinkedHashMap<String, String>> contents = FileHandler.INSTANCE.getContents();
-        if (rowIndex >= 0 && rowIndex < contents.size()) {
-            removedRow = new LinkedHashMap<>(contents.get(rowIndex)); // copy for undo
-            contents.remove(rowIndex);
-        }
+        contents.remove(row);
     }
 
     @Override
     public void undo() {
-        if (removedRow != null) {
-            LinkedList<LinkedHashMap<String, String>> contents = FileHandler.INSTANCE.getContents();
-            if (rowIndex > contents.size()) {
-                contents.addLast(removedRow);
-            } else {
-                contents.add(rowIndex, removedRow);
-            }
-        }
+        contents.add(index, row);
     }
 }
-

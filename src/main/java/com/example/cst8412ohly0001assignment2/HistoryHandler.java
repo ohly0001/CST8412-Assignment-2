@@ -14,32 +14,29 @@ public class HistoryHandler {
     private HistoryHandler() {}
 
     /** Perform a command, clear redo history, and keep max history size */
-    public void perform(Command command) {
+    public void perform(Command command, DatasetController controller) {
         command.execute();
         redoStack.clear();
-
-        if (undoStack.size() >= maxHistory) {
-            undoStack.removeFirst(); // remove oldest command
-        }
-
+        if (undoStack.size() >= maxHistory) undoStack.removeFirst();
         undoStack.addLast(command);
+        command.restoreUIContext(controller);
     }
 
-    /** Undo the last command */
-    public void undo() {
+    public void undo(DatasetController controller) {
         if (!undoStack.isEmpty()) {
-            Command command = undoStack.removeLast(); // pop
-            command.undo();
-            redoStack.addLast(command);
+            Command cmd = undoStack.removeLast();
+            cmd.undo();
+            redoStack.addLast(cmd);
+            cmd.restoreUIContext(controller);
         }
     }
 
-    /** Redo the last undone command */
-    public void redo() {
+    public void redo(DatasetController controller) {
         if (!redoStack.isEmpty()) {
-            Command command = redoStack.removeLast();
-            command.execute();
-            undoStack.addLast(command);
+            Command cmd = redoStack.removeLast();
+            cmd.execute();
+            undoStack.addLast(cmd);
+            cmd.restoreUIContext(controller);
         }
     }
 }

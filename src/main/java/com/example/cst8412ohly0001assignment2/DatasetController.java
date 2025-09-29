@@ -30,10 +30,10 @@ public class DatasetController implements Initializable {
     private VBox addRecordView;
     private VBox singleRecordView;
     private List<TextField> fieldInputs = new ArrayList<>();
-    private int currentRowIndex = 0;
+    int currentRowIndex = 0;
 
     private TableView<LinkedHashMap<String,String>> tableView;
-    private Pagination pagination;
+    Pagination pagination;
 
     private VBox schemaEditorView;
 
@@ -45,7 +45,7 @@ public class DatasetController implements Initializable {
         refreshCurrentView();
     }
 
-    private void refreshCurrentView() {
+    void refreshCurrentView() {
         switch (currentView) {
             case "table" -> refreshTableView();
             case "single" -> refreshSingleRecord();
@@ -178,8 +178,12 @@ public class DatasetController implements Initializable {
                 row.put(schema.get(i), fieldInputs.get(i).getText());
             }
 
-            // Use command to add row
-            HistoryHandler.INSTANCE.perform(new AddRowCommand(row));
+            // Perform AddRowCommand
+            HistoryHandler.INSTANCE.perform(new AddRowCommand(
+                    row,
+                    FXCollections.observableArrayList(FileHandler.INSTANCE.getContents()),
+                    this
+            ), this);
 
             refreshTableView();
             refreshAddRecord();
@@ -236,8 +240,15 @@ public class DatasetController implements Initializable {
         deleteButton.setOnAction(_ -> {
             LinkedList<LinkedHashMap<String,String>> contents = FileHandler.INSTANCE.getContents();
             if (!contents.isEmpty()) {
-                // Use command to remove current row
-                HistoryHandler.INSTANCE.perform(new RemoveRowCommand(currentRowIndex));
+                LinkedHashMap<String,String> row = contents.get(currentRowIndex);
+
+                // Perform RemoveRowCommand
+                HistoryHandler.INSTANCE.perform(new RemoveRowCommand(
+                        row,
+                        currentRowIndex,
+                        FXCollections.observableArrayList(contents),
+                        this
+                ), this);
 
                 if (currentRowIndex >= contents.size())
                     currentRowIndex = contents.size() - 1;
@@ -278,13 +289,12 @@ public class DatasetController implements Initializable {
             TextField tf = new TextField(row.get(key));
             fieldInputs.add(tf);
 
-            // Hook edit command to each TextField
-            tf.focusedProperty().addListener((_, _, isNowFocused) -> {
+            tf.focusedProperty().addListener((obs, oldFocused, isNowFocused) -> {
                 if (!isNowFocused) { // user finished editing
                     String newValue = tf.getText();
                     String oldValue = row.get(key);
                     if (!newValue.equals(oldValue)) {
-                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue));
+                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, this), this);
                         refreshTableView();
                     }
                 }
@@ -438,8 +448,16 @@ public class DatasetController implements Initializable {
             String name = columnName.getText();
             if (name != null && !name.isBlank() && !columnList.getItems().contains(name.strip())) {
                 name = name.strip();
+
+                // Perform AddColumnCommand
+                HistoryHandler.INSTANCE.perform(new AddColumnCommand(
+                        name,
+                        FileHandler.INSTANCE.getContents(),
+                        FileHandler.INSTANCE.getSchema(),
+                        this
+                ), this);
+
                 columnList.getItems().add(name);
-                FileHandler.INSTANCE.addColumn(name);
                 refreshCurrentView();
             }
             columnName.clear();
@@ -448,8 +466,15 @@ public class DatasetController implements Initializable {
         remove.setOnAction(_ -> {
             String col = columnList.getSelectionModel().getSelectedItem();
             if (col != null) {
+                // Perform RemoveColumnCommand
+                HistoryHandler.INSTANCE.perform(new RemoveColumnCommand(
+                        col,
+                        FileHandler.INSTANCE.getContents(),
+                        FileHandler.INSTANCE.getSchema(),
+                        this
+                ), this);
+
                 columnList.getItems().remove(col);
-                FileHandler.INSTANCE.removeColumn(col);
                 refreshCurrentView();
             }
         });
@@ -470,11 +495,11 @@ public class DatasetController implements Initializable {
 
     @FXML
     private void undo() {
-        HistoryHandler.INSTANCE.undo();
+        HistoryHandler.INSTANCE.undo(this);
     }
 
     @FXML
     private void redo() {
-        HistoryHandler.INSTANCE.redo();
+        HistoryHandler.INSTANCE.redo(this);
     }
 }
