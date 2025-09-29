@@ -16,11 +16,9 @@ public abstract class Command {
         this.controller = controller;
     }
 
-    // Must be implemented by subclasses
     public abstract void execute();
     public abstract void undo();
 
-    // Restore UI context after executing/undoing
     public void restoreUIContext() {
         controller.setCurrentView(view);
         controller.setCurrentPageIndex(pageIndex);

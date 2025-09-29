@@ -15,7 +15,6 @@ public class OpenFileCommand extends Command {
     private LinkedList<String> oldSchema;
     private LinkedList<LinkedHashMap<String, String>> oldContents;
     private File oldFile;
-    private String oldView;
 
     public OpenFileCommand(File newFile, DatasetController controller) {
         super(controller);
@@ -30,12 +29,7 @@ public class OpenFileCommand extends Command {
         oldFile = FileHandler.INSTANCE.getCurrentFile();
         view = controller.getCurrentView();
         rowIndex = controller.getCurrentRowIndex();
-
-        // Load new file
         FileHandler.INSTANCE.readFile(newFile);
-
-        // Refresh UI
-        controller.refreshCurrentView();
     }
 
     @Override
@@ -44,7 +38,5 @@ public class OpenFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
-
-        restoreUIContext();
     }
 }

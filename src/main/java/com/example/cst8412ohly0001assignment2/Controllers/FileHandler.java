@@ -36,9 +36,10 @@ public class FileHandler
     private LinkedList<LinkedHashMap<String,String>> fileContents = new LinkedList<>();
     private LinkedList<String> fileSchema = new LinkedList<>();
 
-    private final LinkedHashSet<File> previousFiles = new LinkedHashSet<>();
     private File currentFile = null;
-    
+    private final Deque<File> previousFiles = new ArrayDeque<>();
+    private final int maxPreviousFiles = 20;
+
     private FileHandler(){}
 
     public LinkedList<LinkedHashMap<String,String>> getContents()
@@ -58,7 +59,7 @@ public class FileHandler
 
     public void setSchema(LinkedList<String> fileSchema) { this.fileSchema = fileSchema; }
 
-    public LinkedHashSet<File> getPreviousFiles()
+    private Deque<File> getPreviousFiles()
     {
         return previousFiles;
     }
@@ -154,8 +155,7 @@ public class FileHandler
                     case "yaml" -> readYAML(file);
                     case "xml" -> readXML(file);
                 }
-                previousFiles.addFirst(file);
-                currentFile = file;
+                setCurrentFile(file);
                 fileSchema = extractSchema();
             }
         } catch (Exception e) {
@@ -242,8 +242,7 @@ public class FileHandler
                     return;
                 }
             }
-            previousFiles.addFirst(file);
-            currentFile = file;
+            setCurrentFile(file);
             switch (getFileExtension(file)) {
                 case "csv" -> writeCSV(file);
                 case "json" -> writeJSON(file);
@@ -283,7 +282,11 @@ public class FileHandler
     }
 
     public void setCurrentFile(File currentFile) {
-        previousFiles.addLast(this.currentFile);
+        if (previousFiles.size() >= maxPreviousFiles)  {
+            previousFiles.removeFirst();
+        }
+        if (!previousFiles.contains(currentFile))
+            this.previousFiles.addLast(currentFile);
         this.currentFile = currentFile;
     }
 

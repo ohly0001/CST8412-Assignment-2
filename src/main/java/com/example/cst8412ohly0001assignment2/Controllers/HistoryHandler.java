@@ -21,24 +21,24 @@ public class HistoryHandler {
         redoStack.clear();
         if (undoStack.size() >= maxHistory) undoStack.removeFirst();
         undoStack.addLast(command);
-        command.restoreUIContext(command.getController());
+        command.getController().refreshCurrentView();
     }
 
-    public void undo(DatasetController controller) {
+    public void undo() {
         if (!undoStack.isEmpty()) {
-            Command cmd = undoStack.removeLast();
-            cmd.undo();
-            redoStack.addLast(cmd);
-            cmd.restoreUIContext(controller);
+            Command command = undoStack.removeLast();
+            command.undo();
+            redoStack.addLast(command);
+            command.restoreUIContext();
         }
     }
 
-    public void redo(DatasetController controller) {
+    public void redo() {
         if (!redoStack.isEmpty()) {
-            Command cmd = redoStack.removeLast();
-            cmd.execute();
-            undoStack.addLast(cmd);
-            cmd.restoreUIContext(controller);
+            Command command = redoStack.removeLast();
+            command.execute();
+            undoStack.addLast(command);
+            command.restoreUIContext();
         }
     }
 }

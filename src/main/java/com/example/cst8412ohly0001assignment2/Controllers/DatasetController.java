@@ -485,12 +485,12 @@ public class DatasetController implements Initializable {
 
     @FXML
     private void undo() {
-        HistoryHandler.INSTANCE.undo(this);
+        HistoryHandler.INSTANCE.undo();
     }
 
     @FXML
     private void redo() {
-        HistoryHandler.INSTANCE.redo(this);
+        HistoryHandler.INSTANCE.redo();
     }
 
     public int getCurrentRowIndex() {

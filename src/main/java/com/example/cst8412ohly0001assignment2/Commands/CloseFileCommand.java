@@ -27,7 +27,6 @@ public class CloseFileCommand extends Command {
         pageIndex = controller.getCurrentPageIndex();
 
         FileHandler.INSTANCE.closeCurrentFile();
-        controller.refreshCurrentView();
     }
 
     @Override
@@ -35,7 +34,6 @@ public class CloseFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
-        restoreUIContext();
     }
 }
 

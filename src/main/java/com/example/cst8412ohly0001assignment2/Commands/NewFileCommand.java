@@ -15,7 +15,6 @@ public class NewFileCommand extends Command {
     private LinkedList<String> oldSchema;
     private LinkedList<LinkedHashMap<String, String>> oldContents;
     private File oldFile;
-    private String oldView;
 
     public NewFileCommand(File newFile, DatasetController controller) {
         super(controller);
@@ -28,7 +27,7 @@ public class NewFileCommand extends Command {
         oldSchema = new LinkedList<>(FileHandler.INSTANCE.getSchema());
         oldContents = new LinkedList<>(FileHandler.INSTANCE.getContents());
         oldFile = FileHandler.INSTANCE.getCurrentFile();
-        oldView = controller.getCurrentView();
+        view = controller.getCurrentView();
         rowIndex = controller.getCurrentRowIndex();
         pageIndex = controller.getCurrentPageIndex();
 
@@ -44,7 +43,5 @@ public class NewFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
-
-        restoreUIContext();
     }
 }
