@@ -1,53 +1,48 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Commands;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.example.cst8412ohly0001assignment2.Controllers.DatasetController;
+import com.example.cst8412ohly0001assignment2.Controllers.FileHandler;
 
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.io.File;
 
-public class OpenFileCommand extends Command {
-
-    private final File newFile;
-
+public class CloseFileCommand extends Command {
     // Backup previous state
     private LinkedList<String> oldSchema;
-    private LinkedList<LinkedHashMap<String, String>> oldContents;
+    private LinkedList<LinkedHashMap<String,String>> oldContents;
     private File oldFile;
     private String oldView;
 
-    public OpenFileCommand(File newFile, int paginationIndex, int rowIndex, DatasetController controller) {
-        super(paginationIndex, rowIndex, controller);
-        this.newFile = newFile;
+    public CloseFileCommand(DatasetController controller) {
+        super(controller);
     }
 
     @Override
     public void execute() {
-        // Backup old state
         oldSchema = new LinkedList<>(FileHandler.INSTANCE.getSchema());
         oldContents = new LinkedList<>(FileHandler.INSTANCE.getContents());
         oldFile = FileHandler.INSTANCE.getCurrentFile();
         oldView = controller.currentView;
         rowIndex = controller.currentRowIndex;
+        paginationIndex = controller.pagination != null ? controller.pagination.getCurrentPageIndex() : 0;
 
-        // Load new file
-        FileHandler.INSTANCE.readFile(newFile);
-
-        // Refresh UI
+        FileHandler.INSTANCE.closeCurrentFile();
         controller.refreshCurrentView();
     }
 
     @Override
     public void undo() {
-        // Restore old file state
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
 
         controller.currentView = oldView;
         controller.currentRowIndex = rowIndex;
+        if (controller.pagination != null)
+            controller.pagination.setCurrentPageIndex(paginationIndex);
 
         controller.refreshCurrentView();
     }
 }
+

@@ -11,4 +11,8 @@ module com.example.cst8412ohly0001assignment2 {
 
     opens com.example.cst8412ohly0001assignment2 to javafx.fxml;
     exports com.example.cst8412ohly0001assignment2;
+    exports com.example.cst8412ohly0001assignment2.Commands;
+    opens com.example.cst8412ohly0001assignment2.Commands to javafx.fxml;
+    exports com.example.cst8412ohly0001assignment2.Controllers;
+    opens com.example.cst8412ohly0001assignment2.Controllers to javafx.fxml;
 }

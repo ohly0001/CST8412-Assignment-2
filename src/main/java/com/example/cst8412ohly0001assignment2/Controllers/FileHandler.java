@@ -1,4 +1,4 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Controllers;
 
 import javafx.collections.ObservableList;
 import org.apache.commons.csv.CSVFormat;

@@ -1,5 +1,6 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Controllers;
 
+import com.example.cst8412ohly0001assignment2.Commands.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -30,14 +31,14 @@ public class DatasetController implements Initializable {
     private VBox addRecordView;
     private VBox singleRecordView;
     private List<TextField> fieldInputs = new ArrayList<>();
-    int currentRowIndex = 0;
+    public int currentRowIndex = 0;
 
     private TableView<LinkedHashMap<String,String>> tableView;
-    Pagination pagination;
+    public Pagination pagination;
 
     private VBox schemaEditorView;
 
-    String currentView = "table";
+    public String currentView = "table";
 
     /* ------------------------ Utility ------------------------ */
     @Override
@@ -45,7 +46,7 @@ public class DatasetController implements Initializable {
         refreshCurrentView();
     }
 
-    void refreshCurrentView() {
+    public void refreshCurrentView() {
         switch (currentView) {
             case "table" -> refreshTableView();
             case "single" -> refreshSingleRecord();
@@ -108,10 +109,7 @@ public class DatasetController implements Initializable {
     @FXML private void openFile() {
         File file = selectFileToOpen("Open File");
         if (file != null) {
-            HistoryHandler.INSTANCE.perform(new OpenFileCommand(
-                    file, pagination.getCurrentPageIndex(),
-                    currentRowIndex,
-                    this));
+            HistoryHandler.INSTANCE.perform(new OpenFileCommand(file, this));
         }
     }
 
@@ -135,11 +133,7 @@ public class DatasetController implements Initializable {
 
     @FXML private void revertFile() {
         FileHandler.INSTANCE.reloadCurrentFile();
-        HistoryHandler.INSTANCE.perform(new OpenFileCommand(
-                FileHandler.INSTANCE.getCurrentFile(),
-                pagination.getCurrentPageIndex(),
-                currentRowIndex,
-                this));
+        HistoryHandler.INSTANCE.perform(new OpenFileCommand(FileHandler.INSTANCE.getCurrentFile(), this));
         refreshCurrentView();
     }
 
@@ -186,12 +180,7 @@ public class DatasetController implements Initializable {
             }
 
             // Perform AddRowCommand
-            HistoryHandler.INSTANCE.perform(new AddRowCommand(
-                    row,
-                    FXCollections.observableArrayList(FileHandler.INSTANCE.getContents()),
-                    pagination.getCurrentPageIndex(),
-                    currentRowIndex,
-                    this));
+            HistoryHandler.INSTANCE.perform(new AddRowCommand(row, FXCollections.observableArrayList(FileHandler.INSTANCE.getContents()), this));
 
             refreshTableView();
             refreshAddRecord();
@@ -251,14 +240,7 @@ public class DatasetController implements Initializable {
                 LinkedHashMap<String,String> row = contents.get(currentRowIndex);
 
                 // Perform RemoveRowCommand
-                HistoryHandler.INSTANCE.perform(new RemoveRowCommand(
-                        row,
-                        currentRowIndex,
-                        FXCollections.observableArrayList(contents),
-                        pagination.getCurrentPageIndex(),
-                        currentRowIndex,
-                        this
-                ));
+                HistoryHandler.INSTANCE.perform(new RemoveRowCommand(row, FXCollections.observableArrayList(contents), this));
 
                 if (currentRowIndex >= contents.size())
                     currentRowIndex = contents.size() - 1;
@@ -304,7 +286,7 @@ public class DatasetController implements Initializable {
                     String newValue = tf.getText();
                     String oldValue = row.get(key);
                     if (!newValue.equals(oldValue)) {
-                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, pagination.getCurrentPageIndex(), currentRowIndex, this));
+                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, this));
                         refreshTableView();
                     }
                 }
@@ -464,8 +446,6 @@ public class DatasetController implements Initializable {
                         name,
                         FileHandler.INSTANCE.getContents(),
                         FileHandler.INSTANCE.getSchema(),
-                        pagination.getCurrentPageIndex(),
-                        currentRowIndex,
                         this));
 
                 columnList.getItems().add(name);
@@ -482,8 +462,6 @@ public class DatasetController implements Initializable {
                         col,
                         FileHandler.INSTANCE.getContents(),
                         FileHandler.INSTANCE.getSchema(),
-                        pagination.getCurrentPageIndex(),
-                        currentRowIndex,
                         this));
 
                 columnList.getItems().remove(col);

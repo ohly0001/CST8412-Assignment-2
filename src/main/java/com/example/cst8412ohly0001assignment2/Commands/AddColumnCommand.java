@@ -1,4 +1,6 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Commands;
+
+import com.example.cst8412ohly0001assignment2.Controllers.DatasetController;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,12 +10,11 @@ public class AddColumnCommand extends Command {
     private final List<LinkedHashMap<String, String>> contents;
     private final List<String> schema;
 
-    public AddColumnCommand(String columnName, List<LinkedHashMap<String, String>> contents, List<String> schema, int paginationIndex, int rowIndex, DatasetController controller) {
-        super(paginationIndex, rowIndex, controller);
+    public AddColumnCommand(String columnName, List<LinkedHashMap<String, String>> contents, List<String> schema, DatasetController controller) {
+        super(controller);
         this.columnName = columnName;
         this.contents = contents;
         this.schema = schema;
-        captureUIContext(controller.pagination, controller.currentRowIndex);
     }
 
     @Override

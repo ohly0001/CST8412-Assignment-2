@@ -1,4 +1,7 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Commands;
+
+import com.example.cst8412ohly0001assignment2.Controllers.DatasetController;
+import com.example.cst8412ohly0001assignment2.Controllers.FileHandler;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -14,8 +17,8 @@ public class NewFileCommand extends Command {
     private File oldFile;
     private String oldView;
 
-    public NewFileCommand(File newFile, int paginationIndex, int rowIndex, DatasetController controller) {
-        super(paginationIndex, rowIndex, controller);
+    public NewFileCommand(File newFile, DatasetController controller) {
+        super(controller);
         this.newFile = newFile;
     }
 

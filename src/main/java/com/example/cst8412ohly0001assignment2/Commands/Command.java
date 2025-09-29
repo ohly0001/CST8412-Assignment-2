@@ -1,6 +1,6 @@
-package com.example.cst8412ohly0001assignment2;
+package com.example.cst8412ohly0001assignment2.Commands;
 
-import javafx.scene.control.Pagination;
+import com.example.cst8412ohly0001assignment2.Controllers.DatasetController;
 
 public abstract class Command {
     // UI context
@@ -8,16 +8,10 @@ public abstract class Command {
     protected int rowIndex = 0;
     protected DatasetController controller;
 
-    public Command(int paginationIndex, int rowIndex, DatasetController controller) {
-        this.paginationIndex = paginationIndex;
-        this.rowIndex = rowIndex;
+    public Command(DatasetController controller) {
+        this.paginationIndex = controller.pagination != null ? controller.pagination.getCurrentPageIndex() : 0;
+        this.rowIndex = controller.currentRowIndex;
         this.controller = controller;
-    }
-
-    // Capture context when the command is created
-    public void captureUIContext(Pagination pagination, int rowIndex) {
-        this.paginationIndex = pagination != null ? pagination.getCurrentPageIndex() : 0;
-        this.rowIndex = rowIndex;
     }
 
     // Must be implemented by subclasses
