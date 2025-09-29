@@ -59,7 +59,7 @@ public class FileHandler
 
     public void setSchema(LinkedList<String> fileSchema) { this.fileSchema = fileSchema; }
 
-    private Deque<File> getPreviousFiles()
+    Deque<File> getPreviousFiles()
     {
         return previousFiles;
     }
