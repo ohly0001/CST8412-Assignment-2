@@ -289,7 +289,7 @@ public class DatasetController implements Initializable {
             TextField tf = new TextField(row.get(key));
             fieldInputs.add(tf);
 
-            tf.focusedProperty().addListener((obs, oldFocused, isNowFocused) -> {
+            tf.focusedProperty().addListener((_, _, isNowFocused) -> {
                 if (!isNowFocused) { // user finished editing
                     String newValue = tf.getText();
                     String oldValue = row.get(key);
