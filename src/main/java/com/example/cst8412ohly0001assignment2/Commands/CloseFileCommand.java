@@ -12,7 +12,6 @@ public class CloseFileCommand extends Command {
     private LinkedList<String> oldSchema;
     private LinkedList<LinkedHashMap<String,String>> oldContents;
     private File oldFile;
-    private String oldView;
 
     public CloseFileCommand(DatasetController controller) {
         super(controller);
@@ -23,9 +22,9 @@ public class CloseFileCommand extends Command {
         oldSchema = new LinkedList<>(FileHandler.INSTANCE.getSchema());
         oldContents = new LinkedList<>(FileHandler.INSTANCE.getContents());
         oldFile = FileHandler.INSTANCE.getCurrentFile();
-        oldView = controller.currentView;
-        rowIndex = controller.currentRowIndex;
-        paginationIndex = controller.pagination != null ? controller.pagination.getCurrentPageIndex() : 0;
+        view = controller.getCurrentView();
+        rowIndex = controller.getCurrentRowIndex();
+        pageIndex = controller.getCurrentPageIndex();
 
         FileHandler.INSTANCE.closeCurrentFile();
         controller.refreshCurrentView();
@@ -36,13 +35,7 @@ public class CloseFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
-
-        controller.currentView = oldView;
-        controller.currentRowIndex = rowIndex;
-        if (controller.pagination != null)
-            controller.pagination.setCurrentPageIndex(paginationIndex);
-
-        controller.refreshCurrentView();
+        restoreUIContext();
     }
 }
 

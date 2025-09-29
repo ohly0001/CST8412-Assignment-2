@@ -28,8 +28,8 @@ public class OpenFileCommand extends Command {
         oldSchema = new LinkedList<>(FileHandler.INSTANCE.getSchema());
         oldContents = new LinkedList<>(FileHandler.INSTANCE.getContents());
         oldFile = FileHandler.INSTANCE.getCurrentFile();
-        oldView = controller.currentView;
-        rowIndex = controller.currentRowIndex;
+        view = controller.getCurrentView();
+        rowIndex = controller.getCurrentRowIndex();
 
         // Load new file
         FileHandler.INSTANCE.readFile(newFile);
@@ -45,9 +45,6 @@ public class OpenFileCommand extends Command {
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
 
-        controller.currentView = oldView;
-        controller.currentRowIndex = rowIndex;
-
-        controller.refreshCurrentView();
+        restoreUIContext();
     }
 }

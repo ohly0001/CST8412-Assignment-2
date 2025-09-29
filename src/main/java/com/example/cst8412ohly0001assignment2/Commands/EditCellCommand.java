@@ -27,9 +27,4 @@ public class EditCellCommand extends Command {
     public void undo() {
         row.put(column, oldValue);
     }
-
-    @Override
-    public void restoreUIContext(DatasetController controller) {
-        super.restoreUIContext(controller);
-    }
 }

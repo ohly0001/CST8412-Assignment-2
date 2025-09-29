@@ -21,7 +21,7 @@ public class HistoryHandler {
         redoStack.clear();
         if (undoStack.size() >= maxHistory) undoStack.removeFirst();
         undoStack.addLast(command);
-        command.restoreUIContext(command.controller);
+        command.restoreUIContext(command.getController());
     }
 
     public void undo(DatasetController controller) {

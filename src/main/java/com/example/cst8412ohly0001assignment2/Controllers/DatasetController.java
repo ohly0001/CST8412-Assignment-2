@@ -31,14 +31,14 @@ public class DatasetController implements Initializable {
     private VBox addRecordView;
     private VBox singleRecordView;
     private List<TextField> fieldInputs = new ArrayList<>();
-    public int currentRowIndex = 0;
+    private int currentRowIndex = 0;
 
     private TableView<LinkedHashMap<String,String>> tableView;
-    public Pagination pagination;
+    private Pagination pagination;
 
     private VBox schemaEditorView;
 
-    public String currentView = "table";
+    private String currentView = "table";
 
     /* ------------------------ Utility ------------------------ */
     @Override
@@ -360,7 +360,7 @@ public class DatasetController implements Initializable {
 
     /* ------------------------ Schema editor ------------------------ */
     @FXML
-    void showSchemaEditor() {
+    public void showSchemaEditor() {
         if (schemaEditorView == null) {
             schemaEditorView = new VBox(10);
             schemaEditorView.setPadding(new Insets(10));
@@ -491,5 +491,30 @@ public class DatasetController implements Initializable {
     @FXML
     private void redo() {
         HistoryHandler.INSTANCE.redo(this);
+    }
+
+    public int getCurrentRowIndex() {
+        return currentRowIndex;
+    }
+
+    public String getCurrentView() {
+        return currentView;
+    }
+
+    public void setCurrentRowIndex(int rowIndex) {
+        this.currentRowIndex = rowIndex;
+    }
+
+    public void setCurrentView(String newView) {
+        this.currentView = newView;
+    }
+
+    public int getCurrentPageIndex() {
+        return pagination != null ? pagination.getCurrentPageIndex() : 0;
+    }
+
+    public void setCurrentPageIndex(int paginationIndex) {
+        if (pagination != null)
+            pagination.setCurrentPageIndex(paginationIndex);
     }
 }

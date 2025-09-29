@@ -28,9 +28,9 @@ public class NewFileCommand extends Command {
         oldSchema = new LinkedList<>(FileHandler.INSTANCE.getSchema());
         oldContents = new LinkedList<>(FileHandler.INSTANCE.getContents());
         oldFile = FileHandler.INSTANCE.getCurrentFile();
-        oldView = controller.currentView;
-        rowIndex = controller.currentRowIndex;
-        paginationIndex = controller.pagination != null ? controller.pagination.getCurrentPageIndex() : 0;
+        oldView = controller.getCurrentView();
+        rowIndex = controller.getCurrentRowIndex();
+        pageIndex = controller.getCurrentPageIndex();
 
         // Perform new file creation
         FileHandler.INSTANCE.readFile(newFile);
@@ -45,11 +45,6 @@ public class NewFileCommand extends Command {
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
 
-        controller.currentView = oldView;
-        controller.currentRowIndex = rowIndex;
-        if (controller.pagination != null)
-            controller.pagination.setCurrentPageIndex(paginationIndex);
-
-        controller.refreshCurrentView();
+        restoreUIContext();
     }
 }

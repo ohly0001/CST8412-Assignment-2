@@ -32,11 +32,11 @@ import org.yaml.snakeyaml.Yaml;
 public class FileHandler
 {
     public static final FileHandler INSTANCE = new FileHandler();
-    private Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
+    private final Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
     private LinkedList<LinkedHashMap<String,String>> fileContents = new LinkedList<>();
     private LinkedList<String> fileSchema = new LinkedList<>();
 
-    private LinkedHashSet<File> previousFiles = new LinkedHashSet<>();
+    private final LinkedHashSet<File> previousFiles = new LinkedHashSet<>();
     private File currentFile = null;
     
     private FileHandler(){}
@@ -269,16 +269,6 @@ public class FileHandler
         currentFile = null;
         fileContents.clear();
         fileSchema.clear();
-    }
-
-    public void addColumn(String newCol) {
-        fileSchema.add(newCol);
-        fileContents.forEach(row -> row.put(newCol, ""));
-    }
-
-    public void removeColumn(String colToRemove) {
-        fileSchema.remove(colToRemove);
-        fileContents.forEach(row -> row.remove(colToRemove));
     }
 
     public void reorderColumns(ObservableList<String> items) {
