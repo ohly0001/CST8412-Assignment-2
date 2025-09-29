@@ -69,8 +69,8 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Edit">
           <items>
-            <MenuItem mnemonicParsing="false" text="Undo" />
-            <MenuItem mnemonicParsing="false" text="Redo" />
+            <MenuItem mnemonicParsing="false" onAction="#undo" text="Undo" />
+            <MenuItem mnemonicParsing="false" onAction="#redo" text="Redo" />
             <MenuItem mnemonicParsing="false" onAction="#revertFile" text="Revert" />
           </items>
         </Menu>
