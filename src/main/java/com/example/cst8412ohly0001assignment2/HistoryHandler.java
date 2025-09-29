@@ -14,12 +14,12 @@ public class HistoryHandler {
     private HistoryHandler() {}
 
     /** Perform a command, clear redo history, and keep max history size */
-    public void perform(Command command, DatasetController controller) {
+    public void perform(Command command) {
         command.execute();
         redoStack.clear();
         if (undoStack.size() >= maxHistory) undoStack.removeFirst();
         undoStack.addLast(command);
-        command.restoreUIContext(controller);
+        command.restoreUIContext(command.controller);
     }
 
     public void undo(DatasetController controller) {

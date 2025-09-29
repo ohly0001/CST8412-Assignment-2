@@ -108,7 +108,10 @@ public class DatasetController implements Initializable {
     @FXML private void openFile() {
         File file = selectFileToOpen("Open File");
         if (file != null) {
-            HistoryHandler.INSTANCE.perform(new OpenFileCommand(file, pagination.getCurrentPageIndex(), currentRowIndex, this), this);
+            HistoryHandler.INSTANCE.perform(new OpenFileCommand(
+                    file, pagination.getCurrentPageIndex(),
+                    currentRowIndex,
+                    this));
         }
     }
 
@@ -132,7 +135,11 @@ public class DatasetController implements Initializable {
 
     @FXML private void revertFile() {
         FileHandler.INSTANCE.reloadCurrentFile();
-        HistoryHandler.INSTANCE.perform(new OpenFileCommand(FileHandler.INSTANCE.getCurrentFile(), pagination.getCurrentPageIndex(), currentRowIndex, this), this);
+        HistoryHandler.INSTANCE.perform(new OpenFileCommand(
+                FileHandler.INSTANCE.getCurrentFile(),
+                pagination.getCurrentPageIndex(),
+                currentRowIndex,
+                this));
         refreshCurrentView();
     }
 
@@ -184,8 +191,7 @@ public class DatasetController implements Initializable {
                     FXCollections.observableArrayList(FileHandler.INSTANCE.getContents()),
                     pagination.getCurrentPageIndex(),
                     currentRowIndex,
-                    this
-            ), this);
+                    this));
 
             refreshTableView();
             refreshAddRecord();
@@ -252,7 +258,7 @@ public class DatasetController implements Initializable {
                         pagination.getCurrentPageIndex(),
                         currentRowIndex,
                         this
-                ), this);
+                ));
 
                 if (currentRowIndex >= contents.size())
                     currentRowIndex = contents.size() - 1;
@@ -298,7 +304,7 @@ public class DatasetController implements Initializable {
                     String newValue = tf.getText();
                     String oldValue = row.get(key);
                     if (!newValue.equals(oldValue)) {
-                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, pagination.getCurrentPageIndex(), currentRowIndex, this), this);
+                        HistoryHandler.INSTANCE.perform(new EditCellCommand(row, key, newValue, pagination.getCurrentPageIndex(), currentRowIndex, this));
                         refreshTableView();
                     }
                 }
@@ -460,7 +466,7 @@ public class DatasetController implements Initializable {
                         FileHandler.INSTANCE.getSchema(),
                         pagination.getCurrentPageIndex(),
                         currentRowIndex,
-                        this), this);
+                        this));
 
                 columnList.getItems().add(name);
                 refreshCurrentView();
@@ -478,7 +484,7 @@ public class DatasetController implements Initializable {
                         FileHandler.INSTANCE.getSchema(),
                         pagination.getCurrentPageIndex(),
                         currentRowIndex,
-                        this), this);
+                        this));
 
                 columnList.getItems().remove(col);
                 refreshCurrentView();
