@@ -7,8 +7,6 @@ module com.example.cst8412ohly0001assignment2 {
     requires java.logging;
     requires org.yaml.snakeyaml;
     requires java.desktop;
-    requires com.example.cst8412ohly0001assignment2;
-
 
     opens com.example.cst8412ohly0001assignment2 to javafx.fxml;
     exports com.example.cst8412ohly0001assignment2;

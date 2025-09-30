@@ -27,6 +27,7 @@ public class CloseFileCommand extends Command {
         pageIndex = controller.getCurrentPageIndex();
 
         FileHandler.INSTANCE.closeCurrentFile();
+        controller.getCurrentFilePathLabel().setText("No File Opened");
     }
 
     @Override
@@ -34,6 +35,7 @@ public class CloseFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
+        controller.getCurrentFilePathLabel().setText(oldFile.getAbsolutePath());
     }
 }
 

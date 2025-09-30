@@ -2,6 +2,7 @@ package com.example.cst8412ohly0001assignment2.Commands;
 
 import com.example.cst8412ohly0001assignment2.Controllers.DatasetController;
 import com.example.cst8412ohly0001assignment2.Controllers.FileHandler;
+import javafx.scene.control.Label;
 
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -30,6 +31,7 @@ public class OpenFileCommand extends Command {
         view = controller.getCurrentView();
         rowIndex = controller.getCurrentRowIndex();
         FileHandler.INSTANCE.readFile(newFile);
+        controller.getCurrentFilePathLabel().setText(newFile.getAbsolutePath());
     }
 
     @Override
@@ -38,5 +40,6 @@ public class OpenFileCommand extends Command {
         FileHandler.INSTANCE.setSchema(oldSchema);
         FileHandler.INSTANCE.setContents(oldContents);
         FileHandler.INSTANCE.setCurrentFile(oldFile);
+        controller.getCurrentFilePathLabel().setText(oldFile.getAbsolutePath());
     }
 }

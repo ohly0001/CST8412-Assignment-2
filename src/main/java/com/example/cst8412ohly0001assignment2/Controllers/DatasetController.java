@@ -25,20 +25,20 @@ import java.util.*;
 
 public class DatasetController implements Initializable {
 
-    @FXML public VBox rootPane;
-    @FXML public ScrollPane viewPane;
+    @FXML Label currentFilePathLabel;
+    @FXML VBox rootPane;
+    @FXML ScrollPane viewPane;
     @FXML Menu recentFilesMenu;
 
     // Views
     private VBox addRecordView;
     private VBox singleRecordView;
+    private VBox schemaEditorView;
     private List<TextField> fieldInputs = new ArrayList<>();
     private int currentRowIndex = 0;
 
     private TableView<LinkedHashMap<String,String>> tableView;
     private Pagination pagination;
-
-    private VBox schemaEditorView;
 
     private String currentView = "table";
     private Stage stage = null;
@@ -61,9 +61,9 @@ public class DatasetController implements Initializable {
 
     public void refreshCurrentView() {
         switch (currentView) {
-            case "table" -> refreshTableView();
-            case "single" -> refreshSingleRecord();
-            case "add" -> refreshAddRecord();
+            case "table" -> showGridView();
+            case "single" -> showSingleRecordView();
+            case "add" -> showAddRecordView();
             case "schema" -> showSchemaEditor();
         }
     }
@@ -101,6 +101,7 @@ public class DatasetController implements Initializable {
 
     private void refreshTableView() {
         LinkedList<LinkedHashMap<String,String>> contents = FileHandler.INSTANCE.getContents();
+
         if (contents.isEmpty()) {
             viewPane.setContent(new Label("No data available."));
             return;
@@ -143,9 +144,10 @@ public class DatasetController implements Initializable {
     @FXML
     public void showGridView() {
         refreshTableView();  // updates columns and pagination
-        VBox tableContainer = new VBox(5, tableView, pagination);
-        tableContainer.setPadding(new Insets(5));
-        viewPane.setContent(tableContainer);  // re-attach every time
+        if (!FileHandler.INSTANCE.getContents().isEmpty()) {
+            VBox tableContainer = new VBox(5, tableView, pagination);
+            viewPane.setContent(tableContainer);
+        }
         currentView = "table";
     }
 
@@ -663,4 +665,11 @@ public class DatasetController implements Initializable {
             // Cancel does nothing
         });
     }
+
+    public Label getCurrentFilePathLabel() {
+        return currentFilePathLabel;
+    }
+
+    @FXML private void undo() { HistoryHandler.INSTANCE.undo(); }
+    @FXML private void redo() { HistoryHandler.INSTANCE.redo(); }
 }
